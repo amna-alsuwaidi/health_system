@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Risk Calculator</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+
+<h2>Health Risk Calculator</h2>
+
+<form id="healthForm">
+    <label for="age">Age:</label>
+    <input type="number" id="age" min="0" max="120" required> years
+    <br><br>
+
+    <label for="height">Height:</label>
+    <input type="number" id="height" min="60" max="250" required> cm
+    <br><br>
+
+    <label for="weight">Weight:</label>
+    <input type="number" id="weight" min="10" max="500" required> kg
+    <br><br>
+
+    <label for="systolic">Blood Pressure:</label>
+    <input type="number" id="systolic" min="50" max="250" required> /
+    <input type="number" id="diastolic" min="30" max="150" required> mmHg
+    <br><br>
+
+    <label>Family History:</label><br>
+    <input type="checkbox" id="diabetes"> Diabetes
+    <input type="checkbox" id="cancer"> Cancer
+    <input type="checkbox" id="alzheimer"> Alzheimer’s
+    <br><br>
+
+    <button type="button" onclick="submitData()">Calculate Risk</button>
+</form>
+
+<h3>Result:</h3>
+<div id="result"></div>
+
+<script>
+    function submitData() {
+        let requestData = {
+            Age: parseInt($("#age").val()),
+            BMI: {
+                height: parseFloat($("#height").val()),
+                weight: parseFloat($("#weight").val())
+            },
+            BP: {
+                systolic: parseInt($("#systolic").val()),
+                diastolic: parseInt($("#diastolic").val())
+            },
+            FD: {
+                diabetes: $("#diabetes").is(":checked") ? 1 : 0,
+                cancer: $("#cancer").is(":checked") ? 1 : 0,
+                alzheimer: $("#alzheimer").is(":checked") ? 1 : 0
+            }
+        };
+
+        $.ajax({
+            url: "http://127.0.0.1:8080/",  // ✅ Use 127.0.0.1 instead of localhost
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(requestData),
+            success: function(response) {
+                console.log("Response received:", response);
+                $("#result").html(`
+                        <p><strong>Risk Category:</strong> ${response.riskCategory}</p>
+                        <p><strong>Total Risk Score:</strong> ${response.totalRisk}</p>
+                        <p><strong>BMI Value:</strong> ${response.bmiValue}</p>
+                        <p><strong>Age Points:</strong> ${response.agePoints}</p>
+                        <p><strong>BMI Points:</strong> ${response.bmiPoints}</p>
+                        <p><strong>Blood Pressure Points:</strong> ${response.bpPoints}</p>
+                        <p><strong>Family Disease Points:</strong> ${response.diseasePoints}</p>
+                    `);
+            },
+            error: function(xhr) {
+                console.error("AJAX Error:", xhr);
+                $("#result").html("<p style='color: red;'>Error: " + xhr.responseText + "</p>");
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
